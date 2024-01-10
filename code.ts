@@ -1,8 +1,15 @@
+import generateThemeData from "./ts/functions/genThemeData";
+
 figma.showUI(__html__);
 figma.ui.resize(500, 600);
 
 figma.ui.onmessage = msg => {
-  if (msg.type === 'create-rectangles') {
+    switch (msg.type) {
+        case "gen-theme-data":
+            generateThemeData();
+            break;
+    }
+  /*if (msg.type === 'create-rectangles') {
     const nodes: SceneNode[] = [];
     for (let i = 0; i < msg.count; i++) {
       const rect = figma.createRectangle();
@@ -15,5 +22,5 @@ figma.ui.onmessage = msg => {
     figma.viewport.scrollAndZoomIntoView(nodes);
   }
 
-  figma.closePlugin();
+  figma.closePlugin();*/
 };

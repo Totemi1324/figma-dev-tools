@@ -14,11 +14,15 @@ textarea {
 <h1>Dev Tools</h2>
 
 <div>
-    <button id="theme-data">Generate theme data</button>
+    <button id="gen-theme-data">Generate theme data</button>
     <textarea name="code-gen" cols=50 rows="30"></textarea>
 </div>
 
 <script>
+
+document.getElementById("gen-theme-data").onclick = () => {
+    parent.postMessage({ pluginMessage: { type: "gen-theme-data" } }, '*')
+}
 
 /*document.getElementById('create').onclick = () => {
   const textbox = document.getElementById('count');
