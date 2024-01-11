@@ -2,7 +2,7 @@
   "name": "Tamas Dev Tools",
   "id": "1326680151305767853",
   "api": "1.0.0",
-  "main": "code.js",
+  "main": "out/code.js",
   "capabilities": [],
   "enableProposedApi": false,
   "editorType": [

@@ -1,4 +1,4 @@
-import generateThemeData from "./ts/functions/genThemeData";
+import { generateThemeData } from "./functions/genThemeData";
 
 figma.showUI(__html__);
 figma.ui.resize(500, 600);
