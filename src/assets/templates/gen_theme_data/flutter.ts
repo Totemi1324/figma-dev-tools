@@ -141,6 +141,8 @@ const textStyles = function (styles: MaterialTextStyle[]): string {
   styles.forEach(style => {
     result += textStylesTemplate(toVariableName(style), style.family, style.size, style.weight) + "\n";
   });
+
+  return result;
 }
 
 // --- HELPER FUNCTIONS ---
