@@ -54,10 +54,10 @@ enum Style {
  * Main template generator for _theme data_ in Flutter. It converts Figma text and color styles into code for a ready-to-implement Cubit service.
  */
 export const getCodeTemplate = function (settings: Settings): string {
-  let materialStyles: MaterialTextStyle[] = [];
+  let materialTextStyles: MaterialTextStyle[] = [];
 
   settings.textStyles.forEach(style => {
-    materialStyles.push(convertToMaterialTextStyle(style));
+    materialTextStyles.push(convertToMaterialTextStyle(style));
   });
 
   return `import 'package:flutter/material.dart';
@@ -67,9 +67,9 @@ ${useFlutterGen(settings.useFlutterGen)}
 class ThemeService extends Cubit<ThemeData> {
   ${}
 
-  ${textStyleGeneratorFunctions(materialStyles)}
+  ${textStyleGeneratorFunctions(materialTextStyles)}
 
-  ${}
+  ${textStyles(materialTextStyles)}
   
   static final _mainTheme = ThemeData(
     brightness: ${},
@@ -110,7 +110,7 @@ const textStyleGeneratorFunctionsTemplate = function (fontName: string): string 
     fontFamily: FontFamily.${fontName},
     fontSize: size,
     fontWeight: weight,
-  );`
+  );`;
 }
 
 const textStyleGeneratorFunctions = function (styles: MaterialTextStyle[]): string {
@@ -126,6 +126,21 @@ const textStyleGeneratorFunctions = function (styles: MaterialTextStyle[]): stri
   });
 
   return result;
+}
+
+/**
+ * Code template for TextStyle variables
+ */
+const textStylesTemplate = function (varName: string, fontName: string, size: number, weight: number): string {
+  return `static final ${varName} = ${fontName}Style(${size}, FontWeight.w${weight});`;
+}
+
+const textStyles = function (styles: MaterialTextStyle[]): string {
+  var result: string = "";
+  
+  styles.forEach(style => {
+    result += textStylesTemplate(toVariableName(style), style.family, style.size, style.weight) + "\n";
+  });
 }
 
 // --- HELPER FUNCTIONS ---
@@ -218,4 +233,44 @@ const convertToMaterialTextStyle = function (figmaStyle: TextStyle): MaterialTex
 
 const firstLetterToLowerCase = function (str: string): string {
   return str.substring(0,1).toLowerCase() + str.substring(1);
+}
+
+const toVariableName = function (style: MaterialTextStyle) {
+  var result: string = "_";
+
+  switch (style.token) {
+    case Tokens.DISPLAY:
+      result += "display";
+      break;
+    case Tokens.HEADLINE:
+      result += "headline";
+      break;
+    case Tokens.TITLE:
+      result += "title";
+      break;
+    case Tokens.BODY:
+      result += "body";
+      break;
+    case Tokens.LABEL:
+      result += "label";
+      break;
+    default:
+      break;
+  }
+
+  switch (style.style) {
+    case Style.LARGE:
+      result += "Large";
+      break;
+    case Style.MEDIUM:
+      result += "Medium";
+      break;
+    case Style.SMALL:
+      result += "Small";
+      break;
+    default:
+      break;
+  }
+
+  return result;
 }
