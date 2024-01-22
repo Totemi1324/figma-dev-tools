@@ -2,8 +2,8 @@
  * Represents a brightess attribute, analogous to the `Brightness` class in Flutter
  */
 export enum Brightness {
-    LIGHT,
-    DARK
+  LIGHT,
+  DARK
 };
 
 /**
@@ -14,24 +14,60 @@ export enum Brightness {
  * @param {FontName} mainFont - The font that should be used as a main font and as the fallback font
  */
 export interface Settings {
-    useFlutterGen: boolean;
-    brightness: Brightness;
-    textStyles: TextStyle[];
-    mainFont: FontName;
+  useFlutterGen: boolean;
+  brightness: Brightness;
+  textStyles: TextStyle[];
+  mainFont: FontName;
 };
+
+/**
+ * Standardized interface for text styles that adhere the Material 3 typescale (https://m3.material.io/styles/typography/type-scale-tokens)
+ * @param {Tokens} token - The token the style belongs to
+ * @param {Style} style - The style that further specifies the token
+ * @param {string} family - The font family
+ * @param {number} size - The font size
+ * @param {number} weight - The font weight (only multiples of 100 from 100-900 allowed)
+ */
+interface MaterialTextStyle {
+  token: Tokens,
+  style: Style,
+  family: string,
+  size: number,
+  weight: number,
+}
+
+enum Tokens {
+  DISPLAY,
+  HEADLINE,
+  TITLE,
+  BODY,
+  LABEL
+}
+
+enum Style {
+  LARGE,
+  MEDIUM,
+  SMALL
+}
 
 /**
  * Main template generator for _theme data_ in Flutter. It converts Figma text and color styles into code for a ready-to-implement Cubit service.
  */
 export const getCodeTemplate = function (settings: Settings): string {
-    return `import 'package:flutter/material.dart';
+  let materialStyles: MaterialTextStyle[] = [];
+
+  settings.textStyles.forEach(style => {
+    materialStyles.push(convertToMaterialTextStyle(style));
+  });
+
+  return `import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 ${useFlutterGen(settings.useFlutterGen)}
 
 class ThemeService extends Cubit<ThemeData> {
   ${}
 
-  ${textStyleGeneratorFunctions(settings.textStyles)}
+  ${textStyleGeneratorFunctions(materialStyles)}
 
   ${}
   
@@ -58,7 +94,7 @@ class ThemeService extends Cubit<ThemeData> {
 const useFlutterGenTemplate: string = `import 'package:flutter_gen/gen/fonts.gen.dart';`;
 
 const useFlutterGen = function (useGen: boolean): string {
-    return useGen ? useFlutterGenTemplate : "";
+  return useGen ? useFlutterGenTemplate : "";
 }
 
 /**
@@ -77,12 +113,105 @@ const textStyleGeneratorFunctionsTemplate = function (fontName: string): string 
   );`
 }
 
-const textStyleGeneratorFunctions = function (styles: TextStyle[]): string {
+const textStyleGeneratorFunctions = function (styles: MaterialTextStyle[]): string {
   var result: string = "";
+  const families: Set<string> = new Set();
 
   styles.forEach(style => {
-    result += textStyleGeneratorFunctionsTemplate(firstLetterToLowerCase(style.fontName.family)) + "\n";
+    families.add(style.family);
   });
+
+  families.forEach(family => {
+    result += textStyleGeneratorFunctionsTemplate(family) + "\n";
+  });
+
+  return result;
+}
+
+// --- HELPER FUNCTIONS ---
+
+const convertToMaterialTextStyle = function (figmaStyle: TextStyle): MaterialTextStyle {
+  var result: MaterialTextStyle = {
+    token: Tokens.BODY,
+    style: Style.MEDIUM,
+    family: "not_found",
+    size: 0,
+    weight: 100,
+  }
+  var components: string[] = figmaStyle.name.split(" ");
+
+  if (components.length >= 1) {
+    var ref: string = components[0].toLowerCase();
+    switch (ref) {
+      case "display":
+        result.token = Tokens.DISPLAY;
+        break;
+      case "headline":
+        result.token = Tokens.HEADLINE;
+        break;
+      case "title":
+        result.token = Tokens.TITLE;
+        break;
+      case "body":
+        result.token = Tokens.BODY;
+        break;
+      case "label":
+        result.token = Tokens.LABEL;
+        break;
+      default:
+        break;
+    }
+  }
+  if (components.length >= 2) {
+    var ref: string = components[1].toLowerCase();
+    switch (ref) {
+      case "large":
+        result.style = Style.LARGE;
+        break;
+      case "medium":
+        result.style = Style.MEDIUM;
+        break;
+      case "small":
+        result.style = Style.SMALL;
+        break;
+      default:
+        break;
+    }
+  }
+
+  result.family = firstLetterToLowerCase(figmaStyle.fontName.family);
+  result.size = figmaStyle.fontSize;
+  switch (figmaStyle.fontName.style.toLowerCase()) {
+    case "thin":
+      result.weight = 100;
+      break;
+    case "extralight":
+      result.weight = 200;
+      break;
+    case "light":
+      result.weight = 300;
+      break;
+    case "regular":
+      result.weight = 400;
+      break;
+    case "medium":
+      result.weight = 500;
+      break;
+    case "semibold":
+      result.weight = 600;
+      break;
+    case "bold":
+      result.weight = 700;
+      break;
+    case "extrabold":
+      result.weight = 800;
+      break;
+    case "black":
+      result.weight = 900;
+      break;
+    default:
+      break;
+  }
 
   return result;
 }
