@@ -31,7 +31,7 @@ ${useFlutterGen(settings.useFlutterGen)}
 class ThemeService extends Cubit<ThemeData> {
   ${}
 
-  ${}
+  ${textStyleGeneratorFunctions(settings.textStyles)}
 
   ${}
   
@@ -59,4 +59,34 @@ const useFlutterGenTemplate: string = `import 'package:flutter_gen/gen/fonts.gen
 
 const useFlutterGen = function (useGen: boolean): string {
     return useGen ? useFlutterGenTemplate : "";
+}
+
+/**
+ * Code template for Material 3 color style
+ */
+// TODO
+
+/**
+ * Code template for TextStyle generator functions
+ */
+const textStyleGeneratorFunctionsTemplate = function (fontName: string): string {
+  return `static TextStyle ${fontName}Style(double size, FontWeight weight) => TextStyle(
+    fontFamily: FontFamily.${fontName},
+    fontSize: size,
+    fontWeight: weight,
+  );`
+}
+
+const textStyleGeneratorFunctions = function (styles: TextStyle[]): string {
+  var result: string = "";
+
+  styles.forEach(style => {
+    result += textStyleGeneratorFunctionsTemplate(firstLetterToLowerCase(style.fontName.family)) + "\n";
+  });
+
+  return result;
+}
+
+const firstLetterToLowerCase = function (str: string): string {
+  return str.substring(0,1).toLowerCase() + str.substring(1);
 }
